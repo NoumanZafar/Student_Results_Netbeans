@@ -1,0 +1,190 @@
+List all the students “Student_Id”,”First_Name”,”Last_Name” and “Prog_Name”
+where program name is  “ADVANCED CERTIFICATE IN SOFTWARE DEVELOPMENT”
+
+SELECT S.STUDENT_ID,S.FIRST_NAME,S.LAST_NAME,P.PROG_NAME
+FROM PROGRAMME P,CLASS_GROUP CG,STUDENT S
+WHERE P.PROG_CODE=CG.PROG_CODE
+AND CG.GROUP_ID=S.GROUP_ID
+AND P.PROG_NAME="ADVANCED CERTIFICATE IN SOFTWARE DEVELOPMENT"
+ORDER BY S.STUDENT_ID;
+
+------------------------------------------------------------------------------------------------
+
+List the module names belongs to program “EMERGENCY CARE SERVICES”
+
+SELECT M.MODULE_NAME
+FROM PROGRAMME P,PROG_MODULE PM,MODULE M
+WHERE P.PROG_CODE=PM.PROG_CODE
+AND PM.MODULE_CODE=M.MODULE_CODE
+AND P.PROG_NAME="EMERGENCY CARE SERVICES";
+
+-------------------------------------------------------------------------------------------------
+
+Name the module group and program taught by”T003” 
+
+SELECT M.MODULE_NAME,CG.GROUP_ID,P.PROG_NAME
+FROM TEACHER_TEACH TT,MODULE M,CLASS_GROUP CG,PROGRAMME P 
+WHERE TT.MODULE_CODE=M.MODULE_CODE
+AND TT.GROUP_ID=CG.GROUP_ID
+AND CG.PROG_CODE=P.PROG_CODE
+AND TT.TEACHER_ID="T003";
+
+--------------------------------------------------------------------------------------------------
+
+List the student and teacher where Email or telephone number is missing
+
+SELECT T.FIRST_NAME,"TEACHER" AS TEACHER_OR_STUDENT,T.EMAIL,T.TELEPHONE_NUMBER 
+FROM TEACHER T
+WHERE (T.EMAIL IS NULL)
+OR T.EMAIL=""
+OR T.TELEPHONE_NUMBER IS NULL
+OR T.TELEPHONE_NUMBER=""
+UNION
+SELECT S.FIRST_NAME,"STUDENT",S.EMAIL,S.TELEPHONE_NUMBER 
+FROM STUDENT S
+WHERE (S.EMAIL IS NULL)
+OR S.EMAIL=""
+OR S.TELEPHONE_NUMBER IS NULL
+OR S.TELEPHONE_NUMBER=""
+ORDER BY 1 DESC;
+
+--------------------------------------------------------------------------------------------------
+
+Name of the students were born in 90’s and their nationality is irish
+
+SELECT S.STUDENT_ID,S.LAST_NAME 
+FROM STUDENT S
+WHERE S.D0B BETWEEN "1990-01-01" AND "1999-12-31"
+AND S.NATIONALITY="IRISH";
+
+--------------------------------------------------------------------------------------------------
+
+Calculating results and printing results
+
+SELECT *,R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM AS TOTAL,
+(CASE
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=80.0 THEN "DISTINCTION"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=60.0 THEN "MERIT"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=50.0 THEN "PASS"
+ELSE "FAIL"
+END) AS GRADE
+FROM RESULTS R;
+
+--------------------------------------------------------------------------------------------------
+
+COMMUNICATION module taught by which teacher to which group
+
+SELECT TT.GROUP_ID,M.MODULE_NAME,T.FIRST_NAME
+FROM MODULE M,TEACHER_TEACH TT,TEACHER T
+WHERE M.MODULE_CODE=TT.MODULE_CODE
+AND TT.TEACHER_ID=T.TEACHER_ID
+AND M.MODULE_NAME="COMMUNICATIONS";
+
+---------------------------------------------------------------------------------------------------
+
+Inserting data in intermediate table from other tables without using primary key e.g using name
+
+insert into prog_module(prog_code,module_code)
+select PROG_CODE,module_code from programme,module
+where PROG_NAME="nouman zafar"
+and module_NAME="COMMUNICATIONS";
+
+---------------------------------------------------------------------------------------------------
+
+Name of the groups belongs to "NURSING STUDIES"
+
+SELECT CG.GROUP_ID
+FROM PROGRAMME P,CLASS_GROUP CG
+WHERE P.PROG_NAME="NURSING STUDIES"
+AND P.PROG_CODE=CG.PROG_CODE
+
+-----------------------------------------------------------------------------------------------------
+
+Which modules belongs to Class_Group “ACFD1”
+
+SELECT M.MODULE_NAME 
+FROM CLASS_GROUP CG,PROG_MODULE PM,MODULE M
+WHERE CG.PROG_CODE=PM.PROG_CODE
+AND PM.MODULE_CODE=M.MODULE_CODE
+AND GROUP_ID="ACFD1";
+
+----------------------------------------------------------------------------------------------------
+
+Which groups module taught by which teacher(for gui always keep ? to where)
+
+SELECT T.FIRST_NAME 
+FROM TEACHER_TEACH TT,MODULE M,TEACHER T
+WHERE TT.GROUP_ID="BS02"
+AND M.MODULE_NAME="COMMUNICATIONS"
+AND TT.MODULE_CODE=M.MODULE_CODE
+AND TT.TEACHER_ID=T.TEACHER_ID
+
+---------------------------------------------------------------------------------------------------
+
+Searching the results of the students by group id
+
+SELECT R.MODULE_CODE,R.STUDENT_ID,R.ASSESSMENT_1,R.ASSESSMENT_2,R.ASSESSMENT_3,
+R.ASSESSMENT_4,R.EXAM,R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM AS TOTAL,
+(CASE
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=80.0 THEN "DISTINCTION"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=60.0 THEN "MERIT"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=50.0 THEN "PASS"
+ELSE "FAIL"
+END) AS GRADE
+FROM CLASS_GROUP CG,STUDENT S,RESULTS R
+WHERE CG.GROUP_ID="BS01"
+AND CG.GROUP_ID=S.GROUP_ID
+AND S.STUDENT_ID=R.STUDENT_ID
+
+--------------------------------------------------------------------------------------------------
+
+Inserting results for whole group at same time
+
+INSERT INTO RESULTS  (MODULE_CODE,STUDENT_ID,ASSESSMENT_1,ASSESSMENT_2,ASSESSMENT_3,ASSESSMENT_4,EXAM)
+SELECT M.MODULE_CODE,S.STUDENT_ID,5,5,5,5,5
+FROM STUDENT S,CLASS_GROUP CG,MODULE M
+WHERE CG.GROUP_ID="ACSD1"
+AND M.MODULE_CODE="5N1367"
+AND S.GROUP_ID=CG.GROUP_ID
+
+---------------------------------------------------------------------------------------------------
+
+Updating results for group
+
+UPDATE RESULTS SET MODULE_CODE=?,
+STUDENT_ID= STUDENT_ID,
+ASSESSMENT_1=?,
+ASSESSMENT_2=?,
+ASSESSMENT_3=?,
+ASSESSMENT_4=?,
+EXAM=?
+where(MODULE_CODE=? and STUDENT_ID= any(Select student_id from student where group_id=?))
+
+---------------------------------------------------------------------------------------------------
+
+Deleting the results for a group
+
+DELETE FROM RESULTS WHERE MODULE_CODE=? AND STUDENT_ID= any(Select student_id from student where group_id=?)
+
+---------------------------------------------------------------------------------------------------
+
+Max Min Function as condition
+
+SELECT S.STUDENT_ID,S.FIRST_NAME,S.LAST_NAME,M.MODULE_NAME,R.ASSESSMENT_1,
+R.ASSESSMENT_2,R.ASSESSMENT_3,R.ASSESSMENT_4,R.EXAM,
+R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM AS TOTAL,
+(CASE
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=80.0 THEN "DISTINCTION"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=60.0 THEN "MERIT"
+WHEN R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM >=50.0 THEN "PASS"
+ELSE "FAIL"
+END) AS GRADE
+FROM RESULTS R,STUDENT S,MODULE M
+WHERE R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM=
+(SELECT MAX(R.ASSESSMENT_1+R.ASSESSMENT_2+R.ASSESSMENT_3+R.ASSESSMENT_4+R.EXAM) AS HIGHEST_MARKS FROM RESULTS R
+WHERE R.MODULE_CODE="5N2706")
+AND R.STUDENT_ID=S.STUDENT_ID
+AND R.MODULE_CODE=M.MODULE_CODE
+
+
+
